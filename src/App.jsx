@@ -2,19 +2,19 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY)
-const symbols = ['SOL/USDT', 'BTC/USDT', 'ETH/USDT', 'DOGE/USDT', 'TRX/USDT', 'ARB/USDT']
+const symbols = ['WBNB/USDT', 'CAKE/USDT', 'USDC/USDT', 'BUSD/USDT', 'BTCB/USDT', 'ETH/USDT', 'ADA/USDT', 'DOT/USDT']
 
 export default function App() {
   const [session, setSession] = useState(() => sessionStorage.getItem('grid_bot_session'))
   const [accessKey, setAccessKey] = useState('')
   const [loginError, setLoginError] = useState('')
-  const [config, setConfig] = useState({ symbol: 'SOL/USDT', lower_price: '', upper_price: '', grid_levels: '', investment_amount: '', entry_price: '', is_active: false })
+  const [config, setConfig] = useState({ symbol: 'WBNB/USDT', lower_price: '', upper_price: '', grid_levels: '', investment_amount: '', entry_price: '', is_active: false })
   const [orders, setOrders] = useState([])
   const [price, setPrice] = useState(null)
   const [notice, setNotice] = useState('')
   const [loading, setLoading] = useState(false)
 
-  async function invoke(action, payload = {}) { const { data, error } = await supabase.functions.invoke('grid-bot', { body: { action, ...payload }, headers: session ? { 'x-bot-session': session } : {} }); if (error) throw new Error(error.message); if (data?.error) throw new Error(data.error); return data }
+  async function invoke(action, payload = {}) { const { data, error } = await supabase.functions.invoke('dynamic-worker', { body: { action, ...payload }, headers: session ? { 'x-bot-session': session } : {} }); if (error) throw new Error(error.message); if (data?.error) throw new Error(data.error); return data }
   async function login(event) { event.preventDefault(); setLoginError(''); setLoading(true); try { const data = await invoke('login', { access_key: accessKey }); sessionStorage.setItem('grid_bot_session', data.session); setSession(data.session); setAccessKey('') } catch (error) { setLoginError(error.message) } finally { setLoading(false) } }
   function logout() { sessionStorage.removeItem('grid_bot_session'); setSession(null); setConfig(current => ({ ...current, is_active: false })) }
   async function load() { const { data } = await supabase.from('grid_config').select('*').eq('id', 1).single(); if (data) setConfig(current => ({ ...current, ...data })); const { data: rows } = await supabase.from('grid_orders').select('*').order('created_at', { ascending: false }).limit(10); if (rows) setOrders(rows) }
