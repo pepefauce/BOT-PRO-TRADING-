@@ -1,0 +1,16 @@
+# Node / frontend
+node_modules/
+dist/
+.vite/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Supabase local state
+.supabase/
+
+# Logs / system
+*.log
+.DS_Store
